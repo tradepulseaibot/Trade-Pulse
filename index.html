@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoirFrame — AI Scene Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Logo & Header -->
+    <header class="header">
+      <div class="logo">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer aperture ring -->
+          <circle cx="12" cy="12" r="10" stroke="#a78bfa" stroke-width="1.5" />
+          <!-- Mechanical iris blades -->
+          <path d="M8 5 L16 5 L16 19 L8 19 Z" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round" fill="#a78bfa" fill-opacity="0.1"/>
+          <path d="M5 8 L19 8 L19 16 L5 16 Z" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round" fill="#a78bfa" fill-opacity="0.05"/>
+          <!-- Eye slit -->
+          <ellipse cx="12" cy="12" rx="3" ry="5" fill="#a78bfa" opacity="0.9"/>
+          <!-- Highlight -->
+          <line x1="10" y1="10" x2="14" y2="10" stroke="#a78bfa" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+          <!-- Lower lid shadow -->
+          <path d="M9 16 Q12 19 15 16" fill="none" stroke="#a78bfa" stroke-width="1.2" opacity="0.5"/>
+        </svg>
+        <span>NoirFrame</span>
+      </div>
+      <p class="tagline">Craft cinematic scenes in shadow and motion.</p>
+    </header>
+
+    <!-- Mode Tabs -->
+    <div class="tabs">
+      <button id="tab-image" class="tab active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <!-- Broken mirror / frame -->
+          <rect x="4" y="5" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5" transform="rotate(-2 12 12)"/>
+          <path d="M12 12 L6 8 M12 12 L18 8 M12 12 L6 16 M12 12 L18 16" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+          <polygon points="9,9 13,12 9,15" fill="currentColor" opacity="0.8"/>
+          <path d="M10 4 L12 6 L14 4" fill="currentColor" opacity="0.4"/>
+        </svg>
+        Image
+      </button>
+      <button id="tab-video" class="tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <!-- Reel with smoke ribbon -->
+          <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1"/>
+          <path d="M16 6 Q20 8 18 12 Q16 16 12 18 Q8 20 8 16" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <circle cx="18" cy="10" r="0.7" fill="currentColor"/>
+          <circle cx="14" cy="17" r="0.7" fill="currentColor"/>
+        </svg>
+        Text→Video
+      </button>
+      <button id="tab-img2vid" class="tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <!-- Phantom double‑exposure with motion trail -->
+          <rect x="4" y="5" width="12" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M16 7 Q20 7 20 12 Q20 17 16 17" stroke="currentColor" stroke-width="1.3" fill="none" opacity="0.7"/>
+          <circle cx="22" cy="12" r="1" fill="currentColor" opacity="0.8"/>
+          <circle cx="19" cy="8" r="0.8" fill="currentColor" opacity="0.5"/>
+          <circle cx="19" cy="16" r="0.8" fill="currentColor" opacity="0.5"/>
+          <polygon points="8,9 11,12 8,15" fill="currentColor" opacity="0.9"/>
+        </svg>
+        Image→Video
+      </button>
+    </div>
+
+    <!-- Input Section -->
+    <div class="input-area">
+      <textarea id="prompt" placeholder="Describe your scene... (e.g., flickering candle in a stone crypt)"></textarea>
+      <div class="file-upload-wrapper" id="file-wrapper" style="display:none;">
+        <label for="image-upload" class="file-label">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 16V4M12 4L8 8M12 4l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Choose image
+        </label>
+        <input type="file" id="image-upload" accept="image/*">
+        <span id="file-name" class="file-name"></span>
+      </div>
+      <button id="generate-btn" class="generate-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Generate
+      </button>
+    </div>
+
+    <!-- Result & Loading -->
+    <div class="result-area">
+      <div id="loading" class="loading" style="display:none;">
+        <svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+        </svg>
+        Crafting your scene...
+      </div>
+      <img id="output-image" style="display:none;" class="output-media" alt="Generated scene">
+      <video id="output-video" controls style="display:none;" class="output-media"></video>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

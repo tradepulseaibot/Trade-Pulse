@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RemitFlow AI — Earn Fee Shares from Diaspora Remittances</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #0d2b2b;
+            --panel: #0d2b2b;
+            --gold: #d4a843;
+            --green: #22c55e;
+            --surface: #113636;
+            --surface2: #164242;
+            --surface3: #1a4a4a;
+            --text: #e8ecec;
+            --text2: #b0bcbc;
+            --text3: #7a9494;
+            --danger: #ef4444;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 8px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #071a1a;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        /* Subtle world map background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 800px;
+            height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Cg fill='none' stroke='%23d4a843' stroke-width='0.6' opacity='0.08'%3E%3Cellipse cx='180' cy='180' rx='90' ry='55'/%3E%3Cellipse cx='420' cy='140' rx='110' ry='60'/%3E%3Cellipse cx='600' cy='170' rx='70' ry='45'/%3E%3Cellipse cx='300' cy='260' rx='65' ry='40'/%3E%3Cellipse cx='520' cy='280' rx='75' ry='38'/%3E%3Cpath d='M140 160 Q200 120 280 150 Q350 110 440 130 Q530 100 620 150'/%3E%3Cpath d='M160 200 Q240 180 320 210 Q400 190 500 220 Q580 200 660 230'/%3E%3Cpath d='M200 250 Q300 230 380 260 Q460 240 540 270'/%3E%3Ccircle cx='350' cy='200' r='3' fill='%23d4a843' opacity='0.15'/%3E%3Ccircle cx='480' cy='180' r='2.5' fill='%23d4a843' opacity='0.12'/%3E%3Ccircle cx='250' cy='230' r='2' fill='%23d4a843' opacity='0.1'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center 80px;
+            background-size: contain;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+            background: var(--bg);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        /* Header */
+        .app-header {
+            padding: 16px 20px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(13, 43, 43, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 168, 67, 0.1);
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-svg {
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+        }
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .logo-text span {
+            color: var(--gold);
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .badge-pill {
+            background: var(--surface2);
+            border: 1px solid rgba(212, 168, 67, 0.25);
+            color: var(--gold);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+        .notification-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--green);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 18px rgba(34, 197, 94, 0.9);
+            }
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0 16px 100px;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        .main-content::-webkit-scrollbar {
+            width: 3px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--surface3);
+            border-radius: 3px;
+        }
+
+        /* View panels */
+        .view-panel {
+            display: none;
+            animation: fadeSlideIn 0.3s ease;
+        }
+        .view-panel.active {
+            display: block;
+        }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hero Card */
+        .hero-card {
+            background: linear-gradient(135deg, #143737 0%, #0f3030 50%, #0d2b2b 100%);
+            border: 1px solid rgba(212, 168, 67, 0.2);
+            border-radius: var(--radius);
+            padding: 20px 18px 16px;
+            margin-top: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -30px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(212, 168, 67, 0.04);
+            pointer-events: none;
+        }
+        .hero-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .hero-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+        .hero-subtitle {
+            font-size: 0.78rem;
+            color: var(--text3);
+            margin-bottom: 12px;
+        }
+        .mini-chart {
+            width: 100%;
+            height: 48px;
+            margin-bottom: 14px;
+            overflow: visible;
+        }
+        .mini-chart svg {
+            width: 100%;
+            height: 100%;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 11px 18px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+            letter-spacing: 0.01em;
+        }
+        .btn-gold {
+            background: var(--gold);
+            color: #0d2b2b;
+            box-shadow: 0 4px 16px rgba(212, 168, 67, 0.3);
+        }
+        .btn-gold:hover {
+            background: #c4973a;
+            box-shadow: 0 6px 20px rgba(212, 168, 67, 0.45);
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid rgba(212, 168, 67, 0.45);
+            color: var(--gold);
+        }
+        .btn-outline:hover {
+            background: rgba(212, 168, 67, 0.08);
+            border-color: var(--gold);
+        }
+        .btn-green {
+            background: var(--green);
+            color: #0d2b2b;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+            width: 100%;
+            justify-content: center;
+            padding: 13px;
+            font-size: 0.9rem;
+            border-radius: 28px;
+        }
+        .btn-green:hover {
+            background: #1db34e;
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.45);
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Quick Stats Row */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 14px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            border-color: rgba(212, 168, 67, 0.2);
+        }
+        .stat-icon {
+            color: var(--gold);
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+        .stat-label {
+            font-size: 0.68rem;
+            color: var(--text3);
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        /* Ticker */
+        .ticker-wrap {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            margin-top: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(212, 168, 67, 0.12);
+            height: 36px;
+            position: relative;
+        }
+        .ticker-track {
+            display: flex;
+            animation: marquee 25s linear infinite;
+            white-space: nowrap;
+            height: 100%;
+            align-items: center;
+        }
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 20px;
+            font-size: 0.75rem;
+            color: var(--gold);
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .ticker-item .ticker-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--green);
+            flex-shrink: 0;
+        }
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        .ticker-wrap:hover .ticker-track {
+            animation-play-state: paused;
+        }
+
+        /* Fee capture cards */
+        .section-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin: 18px 0 10px;
+            letter-spacing: -0.01em;
+            color: var(--text);
+        }
+        .fee-card {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--green);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+        .fee-card:hover {
+            background: var(--surface2);
+            border-left-color: #2dd46b;
+        }
+        .fee-info .fee-title {
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--text);
+        }
+        .fee-info .fee-time {
+            font-size: 0.68rem;
+            color: var(--text3);
+            margin-top: 3px;
+        }
+        .fee-amount {
+            font-weight: 700;
+            color: var(--green);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: rgba(13, 43, 43, 0.95);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-top: 1px solid rgba(212, 168, 67, 0.12);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 4px 14px;
+            z-index: 20;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 12px;
+            transition: var(--transition);
+            color: var(--text3);
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            border: none;
+            background: none;
+            font-family: 'Inter', sans-serif;
+            min-width: 56px;
+        }
+        .nav-item.active {
+            color: var(--gold);
+        }
+        .nav-item.active .nav-icon {
+            color: var(--gold);
+        }
+        .nav-icon {
+            transition: var(--transition);
+        }
+        .nav-item:hover {
+            color: var(--text2);
+        }
+
+        /* Tier Cards */
+        .tier-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 18px 16px;
+            margin-bottom: 12px;
+            border: 1.5px solid transparent;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        .tier-card:hover {
+            border-color: rgba(212, 168, 67, 0.3);
+            background: var(--surface2);
+        }
+        .tier-card.featured {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(212, 168, 67, 0.06);
+        }
+        .tier-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--gold);
+            margin-bottom: 4px;
+        }
+        .tier-desc {
+            font-size: 0.72rem;
+            color: var(--text3);
+            margin-bottom: 8px;
+        }
+        .tier-rate {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+        .tier-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 8px 0 12px;
+            font-size: 0.68rem;
+            color: var(--text3);
+        }
+        .tier-meta span {
+            background: var(--surface3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .btn-tier {
+            width: 100%;
+            background: var(--gold);
+            color: #0d2b2b;
+            font-weight: 700;
+            padding: 10px;
+            border-radius: 22px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            transition: var(--transition);
+            letter-spacing: 0.01em;
+        }
+        .btn-tier:hover {
+            background: #c4973a;
+        }
+
+        /* Feature row */
+        .feature-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 14px 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: var(--text2);
+            background: var(--surface);
+            padding: 10px 12px;
+            border-radius: var(--radius-xs);
+        }
+        .feature-item i {
+            color: var(--green);
+        }
+
+        /* Promo banner */
+        .promo-banner {
+            background: linear-gradient(135deg, rgba(212, 168, 67, 0.15), rgba(212, 168, 67, 0.05));
+            border: 1px dashed rgba(212, 168, 67, 0.35);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            text-align: center;
+            margin: 12px 0;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--gold);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .promo-banner:hover {
+            background: rgba(212, 168, 67, 0.2);
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--text2);
+            margin-bottom: 5px;
+            letter-spacing: 0.02em;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--surface2);
+            border: 1.5px solid var(--surface3);
+            border-radius: var(--radius-xs);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            letter-spacing: 0.01em;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.08);
+        }
+        .preset-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            padding: 8px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--surface3);
+            border-radius: 18px;
+            color: var(--text);
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .preset-btn:hover,
+        .preset-btn.selected {
+            background: var(--gold);
+            color: #0d2b2b;
+            border-color: var(--gold);
+            font-weight: 700;
+        }
+
+        /* Method selector */
+        .method-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .method-option {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 10px;
+            background: var(--surface2);
+            border: 1.5px solid var(--surface3);
+            border-radius: var(--radius-xs);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.7rem;
+            color: var(--text2);
+        }
+        .method-option.selected {
+            border-color: var(--gold);
+            background: rgba(212, 168, 67, 0.08);
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .method-option:hover {
+            border-color: rgba(212, 168, 67, 0.4);
+        }
+
+        /* Wallet cards */
+        .wallet-account-card {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wallet-acct-name {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        .wallet-acct-sub {
+            font-size: 0.65rem;
+            color: var(--text3);
+        }
+        .wallet-acct-amount {
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 0.9rem;
+        }
+        .wallet-acct-pct {
+            font-size: 0.65rem;
+            color: var(--text3);
+        }
+
+        /* Transaction list */
+        .tx-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .tx-type {
+            font-weight: 600;
+            font-size: 0.78rem;
+            color: var(--text);
+        }
+        .tx-date {
+            font-size: 0.65rem;
+            color: var(--text3);
+        }
+        .tx-amount {
+            font-weight: 700;
+            font-size: 0.82rem;
+        }
+        .tx-amount.in {
+            color: var(--green);
+        }
+        .tx-amount.out {
+            color: var(--gold);
+        }
+
+        /* Community */
+        .community-hero {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            margin-top: 12px;
+            border: 1px solid rgba(212, 168, 67, 0.1);
+        }
+        .community-count {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+        .online-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            color: var(--green);
+            font-weight: 600;
+        }
+        .chat-area {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-top: 12px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .chat-msg {
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            background: var(--surface2);
+            border-radius: 12px;
+            font-size: 0.78rem;
+            line-height: 1.4;
+        }
+        .chat-msg .msg-sender {
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: var(--gold);
+            margin-bottom: 3px;
+        }
+        .chat-msg .msg-time {
+            font-size: 0.6rem;
+            color: var(--text3);
+            float: right;
+        }
+        .tab-row {
+            display: flex;
+            gap: 6px;
+            margin: 12px 0;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        .tab-pill {
+            padding: 8px 14px;
+            border-radius: 18px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 1px solid var(--surface3);
+            background: var(--surface);
+            color: var(--text2);
+            transition: var(--transition);
+        }
+        .tab-pill.active {
+            background: var(--gold);
+            color: #0d2b2b;
+            border-color: var(--gold);
+        }
+        .chat-input-bar {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            align-items: center;
+        }
+        .chat-input-bar input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--surface3);
+            border-radius: 22px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+        }
+        .chat-input-bar input:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .sidebar-section {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-top: 10px;
+            font-size: 0.7rem;
+            color: var(--text3);
+        }
+        .sidebar-section strong {
+            color: var(--text);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 24px 20px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(212, 168, 67, 0.2);
+        }
+        .modal h3 {
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        .modal p {
+            font-size: 0.82rem;
+            color: var(--text2);
+            margin-bottom: 16px;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            background: var(--green);
+            color: #0d2b2b;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 0.82rem;
+            box-shadow: var(--shadow);
+            animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-60px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Receipt */
+        .receipt {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            border: 2px dashed var(--green);
+            margin: 14px 0;
+        }
+        .receipt .check-circle {
+            color: var(--green);
+            margin-bottom: 8px;
+        }
+        .receipt h3 {
+            color: var(--green);
+            margin-bottom: 4px;
+        }
+        .receipt .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            padding: 4px 0;
+            color: var(--text2);
+        }
+        .receipt .detail-row strong {
+            color: var(--text);
+        }
+
+        /* Responsive */
+        @media (max-width: 430px) {
+            #app {
+                max-width: 100%;
+            }
+            .hero-amount {
+                font-size: 2rem;
+            }
+            .quick-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .stat-card {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <!-- Logo: golden arrow looping between two points (bridge) -->
+                <svg class="logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="20" r="3" fill="#d4a843" opacity="0.8"/>
+                    <circle cx="30" cy="20" r="3" fill="#d4a843" opacity="0.8"/>
+                    <path d="M13 20 Q20 6 27 20" stroke="#d4a843" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <path d="M27 20 Q20 34 13 20" stroke="#d4a843" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+                    <circle cx="20" cy="20" r="1.5" fill="#22c55e"/>
+                </svg>
+                <span class="logo-text">Remit<span>Flow</span> AI</span>
+            </div>
+            <div class="header-actions">
+                <span class="badge-pill" id="header-tier-badge">Starter</span>
+                <div class="notification-dot" title="Live activity"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- HOME VIEW -->
+            <div class="view-panel active" id="view-home">
+                <div class="hero-card">
+                    <div class="hero-label">Total Fee Share Earned</div>
+                    <div class="hero-amount" id="totalEarned">$320.00</div>
+                    <div class="hero-subtitle">From remittance spread captures</div>
+                    <div class="mini-chart" id="miniChartContainer">
+                        <svg viewBox="0 0 200 48" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#d4a843" stop-opacity="0.4"/>
+                                    <stop offset="100%" stop-color="#d4a843" stop-opacity="0.02"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M0,38 L20,34 L40,28 L60,30 L80,20 L100,24 L120,14 L140,18 L160,6 L180,10 L200,2" fill="none" stroke="#d4a843" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M0,38 L20,34 L40,28 L60,30 L80,20 L100,24 L120,14 L140,18 L160,6 L180,10 L200,2 L200,48 L0,48 Z" fill="url(#goldGrad)"/>
+                        </svg>
+                    </div>
+                    <div class="hero-buttons">
+                        <button class="btn btn-gold" onclick="navigateTo('invest')">
+                            <i data-lucide="arrow-down-to-line" style="width:18px;height:18px;"></i> Provide Liquidity
+                        </button>
+                        <button class="btn btn-outline" onclick="navigateTo('withdraw')">
+                            <i data-lucide="arrow-up-from-line" style="width:18px;height:18px;"></i> Collect Share
+                        </button>
+                    </div>
+                </div>
+
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="route" style="width:18px;height:18px;"></i></div>
+                        <div class="stat-value" id="statFlows">843</div>
+                        <div class="stat-label">Active Remittance Flows</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="badge-dollar-sign" style="width:18px;height:18px;"></i></div>
+                        <div class="stat-value" id="statTodayFee">$4.50</div>
+                        <div class="stat-label">Today's Fee Share</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="globe" style="width:18px;height:18px;"></i></div>
+                        <div class="stat-value" id="statDiaspora">12,586</div>
+                        <div class="stat-label">Total Diaspora Served</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="layers" style="width:18px;height:18px;"></i></div>
+                        <div class="stat-value" id="statTier">Starter</div>
+                        <div class="stat-label">Your Tier</div>
+                    </div>
+                </div>
+
+                <!-- Live Remittance Ticker -->
+                <div class="ticker-wrap">
+                    <div class="ticker-track" id="tickerTrack"></div>
+                </div>
+
+                <div class="section-title">Recent Fee Captures</div>
+                <div id="feeCapturesContainer"></div>
+            </div>
+
+            <!-- PROVIDE LIQUIDITY VIEW -->
+            <div class="view-panel" id="view-invest">
+                <div class="section-title" style="margin-top:12px;">Choose Your Liquidity Tier</div>
+                <div id="tierCardsContainer"></div>
+                <div class="feature-row">
+                    <div class="feature-item"><i data-lucide="shield-check" style="width:16px;height:16px;"></i> 100% Secure</div>
+                    <div class="feature-item"><i data-lucide="zap" style="width:16px;height:16px;"></i> Instant Settlements</div>
+                    <div class="feature-item"><i data-lucide="headphones" style="width:16px;height:16px;"></i> 24/7 Support</div>
+                    <div class="feature-item"><i data-lucide="badge-percent" style="width:16px;height:16px;"></i> No Hidden Fees</div>
+                </div>
+                <div class="promo-banner" onclick="selectTier('diaspora')">
+                    ⭐ Upgrade to <strong>Diaspora Tier</strong> — Earn 4.5% fee share on $500+
+                </div>
+            </div>
+
+            <!-- COLLECT SHARE VIEW -->
+            <div class="view-panel" id="view-withdraw">
+                <div class="hero-card" style="margin-top:12px;">
+                    <div class="hero-label">Available Fee Share</div>
+                    <div class="hero-amount" id="availableShare">$320.00</div>
+                    <div class="hero-subtitle">Withdrawable USDT</div>
+                    <button class="btn btn-outline" style="margin-top:8px;" onclick="toggleBalanceEye()" id="eyeToggleBtn">
+                        <i data-lucide="eye" style="width:16px;height:16px;"></i> Hide Balance
+                    </button>
+                </div>
+                <div class="section-title">Withdrawal Method</div>
+                <div class="method-selector" id="methodSelector">
+                    <div class="method-option selected" data-method="trc20">
+                        <i data-lucide="banknote" style="width:20px;height:20px;display:block;margin:0 auto 4px;"></i> USDT (TRC20)
+                    </div>
+                    <div class="method-option" data-method="bep20">
+                        <i data-lucide="coins" style="width:20px;height:20px;display:block;margin:0 auto 4px;"></i> USDT (BEP20)
+                    </div>
+                    <div class="method-option" data-method="ewallet">
+                        <i data-lucide="wallet" style="width:20px;height:20px;display:block;margin:0 auto 4px;"></i> E-Wallet
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:14px;">
+                    <label class="form-label">Wallet Address</label>
+                    <input type="text" class="form-input" id="walletAddress" placeholder="Enter your USDT wallet address">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount (USDT)</label>
+                    <div class="preset-row" id="presetRow">
+                        <button class="preset-btn" data-amount="10">$10</button>
+                        <button class="preset-btn" data-amount="50">$50</button>
+                        <button class="preset-btn" data-amount="100">$100</button>
+                        <button class="preset-btn" data-amount="max">Max</button>
+                    </div>
+                    <input type="number" class="form-input" id="withdrawAmount" placeholder="Enter amount" style="margin-top:8px;" min="1">
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text3);padding:4px 0;">
+                    <span>Network Fee</span><span>1.00 USDT</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text);padding:4px 0;font-weight:600;">
+                    <span>You Receive</span><span id="receivePreview">$0.00</span>
+                </div>
+                <button class="btn btn-green" style="margin-top:14px;" onclick="collectNow()">
+                    <i data-lucide="arrow-up-from-line" style="width:18px;height:18px;"></i> Collect Now
+                </button>
+                <div id="receiptArea"></div>
+            </div>
+
+            <!-- WALLET VIEW -->
+            <div class="view-panel" id="view-wallet">
+                <div class="hero-card" style="margin-top:12px;">
+                    <div class="hero-label">Total USDT Balance</div>
+                    <div class="hero-amount" id="totalBalance">$1,250.00</div>
+                    <div style="display:flex;gap:20px;font-size:0.72rem;color:var(--text3);margin-top:4px;">
+                        <span>Available: <strong style="color:var(--text);" id="availBalance">$930.00</strong></span>
+                        <span>Locked: <strong style="color:var(--gold);" id="lockedBalance">$320.00</strong></span>
+                    </div>
+                </div>
+                <div class="section-title">Wallet Accounts</div>
+                <div class="wallet-account-card">
+                    <div>
+                        <div class="wallet-acct-name">USDT (TRC20) — Primary</div>
+                        <div class="wallet-acct-sub">70% allocation · TMDzR...xY7p</div>
+                    </div>
+                    <div>
+                        <div class="wallet-acct-amount" id="trc20Balance">$875.00</div>
+                        <div class="wallet-acct-pct">70%</div>
+                    </div>
+                </div>
+                <div class="wallet-account-card">
+                    <div>
+                        <div class="wallet-acct-name">USDT (BEP20) — Secondary</div>
+                        <div class="wallet-acct-sub">30% allocation · 0x7F3a...b2D1</div>
+                    </div>
+                    <div>
+                        <div class="wallet-acct-amount" id="bep20Balance">$375.00</div>
+                        <div class="wallet-acct-pct">30%</div>
+                    </div>
+                </div>
+                <div class="section-title">Quick Actions</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-gold btn-sm" style="flex:1;min-width:60px;font-size:0.7rem;padding:10px 8px;justify-content:center;" onclick="navigateTo('invest')"><i data-lucide="arrow-down-to-line" style="width:15px;height:15px;"></i> Deposit</button>
+                    <button class="btn btn-outline btn-sm" style="flex:1;min-width:60px;font-size:0.7rem;padding:10px 8px;justify-content:center;" onclick="navigateTo('withdraw')"><i data-lucide="arrow-up-from-line" style="width:15px;height:15px;"></i> Collect</button>
+                    <button class="btn btn-outline btn-sm" style="flex:1;min-width:60px;font-size:0.7rem;padding:10px 8px;justify-content:center;"><i data-lucide="repeat" style="width:15px;height:15px;"></i> Transfer</button>
+                    <button class="btn btn-outline btn-sm" style="flex:1;min-width:60px;font-size:0.7rem;padding:10px 8px;justify-content:center;"><i data-lucide="history" style="width:15px;height:15px;"></i> History</button>
+                </div>
+                <div class="section-title">Recent Transactions</div>
+                <div id="txList"></div>
+            </div>
+
+            <!-- COMMUNITY VIEW -->
+            <div class="view-panel" id="view-community">
+                <div class="community-hero">
+                    <div class="community-count">12,586+</div>
+                    <div style="color:var(--text2);font-size:0.85rem;">Families Saving Together</div>
+                    <div class="online-badge" style="justify-content:center;margin-top:6px;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+                        <span id="onlineCount">247</span> online now
+                    </div>
+                    <button class="btn btn-gold" style="margin-top:10px;font-size:0.75rem;padding:8px 16px;">
+                        <i data-lucide="user-plus" style="width:16px;height:16px;"></i> Invite Friends
+                    </button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+                    <div class="stat-card" style="cursor:pointer;"><i data-lucide="message-circle" style="width:16px;height:16px;color:var(--gold);"></i><div style="font-weight:600;font-size:0.75rem;">Chat</div></div>
+                    <div class="stat-card" style="cursor:pointer;"><i data-lucide="megaphone" style="width:16px;height:16px;color:var(--gold);"></i><div style="font-weight:600;font-size:0.75rem;">Announcements</div></div>
+                    <div class="stat-card" style="cursor:pointer;"><i data-lucide="badge-dollar-sign" style="width:16px;height:16px;color:var(--gold);"></i><div style="font-weight:600;font-size:0.75rem;">Fee Captures</div></div>
+                    <div class="stat-card" style="cursor:pointer;"><i data-lucide="users" style="width:16px;height:16px;color:var(--gold);"></i><div style="font-weight:600;font-size:0.75rem;">Members</div></div>
+                </div>
+                <div class="tab-row" id="communityTabs">
+                    <span class="tab-pill active" data-tab="general">General Chat</span>
+                    <span class="tab-pill" data-tab="success">Success Stories</span>
+                    <span class="tab-pill" data-tab="market">Market Updates</span>
+                    <span class="tab-pill" data-tab="help">Help Desk</span>
+                </div>
+                <div class="chat-area" id="chatArea"></div>
+                <div class="chat-input-bar">
+                    <input type="text" id="chatInput" placeholder="Join a Tier to Chat..." disabled>
+                    <button class="btn btn-gold" style="padding:8px 14px;font-size:0.7rem;border-radius:20px;" disabled id="sendChatBtn">
+                        <i data-lucide="send" style="width:15px;height:15px;"></i>
+                    </button>
+                </div>
+                <div class="sidebar-section">
+                    <strong>🟢 Online Members:</strong> 247 &nbsp;|&nbsp;
+                    <strong>📊 Live Fee Capture:</strong> <span style="color:var(--green);">$3.40</span> just now &nbsp;|&nbsp;
+                    <strong>👥 Community Stats:</strong> 12,586 members, 843 active flows
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" id="bottomNav">
+            <button class="nav-item active" data-view="home">
+                <i data-lucide="home" class="nav-icon" style="width:20px;height:20px;"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-view="invest">
+                <i data-lucide="piggy-bank" class="nav-icon" style="width:20px;height:20px;"></i>
+                <span>Invest</span>
+            </button>
+            <button class="nav-item" data-view="withdraw">
+                <i data-lucide="arrow-up-circle" class="nav-icon" style="width:20px;height:20px;"></i>
+                <span>Withdraw</span>
+            </button>
+            <button class="nav-item" data-view="wallet">
+                <i data-lucide="wallet" class="nav-icon" style="width:20px;height:20px;"></i>
+                <span>Wallet</span>
+            </button>
+            <button class="nav-item" data-view="community">
+                <i data-lucide="users" class="nav-icon" style="width:20px;height:20px;"></i>
+                <span>Community</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modal placeholder -->
+    <div id="modalContainer"></div>
+    <!-- Toast placeholder -->
+    <div id="toastContainer"></div>
+
+    <script src="community.js"></script>
+    <script src="main.js"></script>
+    <script>
+        // Initialize Lucide icons after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
